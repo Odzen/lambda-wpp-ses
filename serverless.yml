@@ -1,0 +1,35 @@
+service: lambda
+
+frameworkVersion: '3'
+
+plugins:
+  - serverless-offline
+  - serverless-bundle
+useDotenv: true
+provider:
+  name: aws
+  runtime: nodejs16.x
+  profile: lambda-user
+  region: us-east-1
+  stage: dev
+  iam:
+    role:
+      statements:
+        # Allow lambda functions interact with SES service
+        - Effect: Allow
+          Action:
+            - ses:*
+          Resource: '*'
+
+
+functions:
+  sendRemainders:
+    handler: Lambdas/Remainders/handler.handler
+    events:
+      # With CRON
+      - schedule: cron(0 17 * * ? *)
+      # To trigger as an API ednpoint for testing - - Failing
+      - http:
+          path: sendRemainders
+          method: GET
+          cors: true
